@@ -1,31 +1,38 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { Box, Grid, InputBase, IconButton, Paper } from '@material-ui/core'
 import { Add as AddIcon } from '@material-ui/icons'
 import 'fontsource-roboto'
 import './popup.css'
 import WeatherCard from './WeatherCard'
+import { setStoredCities, getStoredCities } from '../utils/storage'
 
 const App: React.FC<{}> = () => {
-  const [cities, setCities] = useState<string[]>([
-    'Carmel',
-    'New York',
-    'Error',
-  ])
+  const [cities, setCities] = useState<string[]>([])
 
   const [cityInput, setCityInput] = useState<string>('')
+
+  useEffect(() => {
+    getStoredCities().then((cities) => setCities(cities))
+  }, [])
 
   const handleCityButtonClick = () => {
     if (cityInput === '') {
       return
     }
-    setCities([...cities, cityInput])
-    setCityInput('')
+    const updatedCities = [...cities, cityInput]
+    setStoredCities(updatedCities).then(() => {
+      setCities(updatedCities)
+      setCityInput('')
+    })
   }
 
-  const handlecityDeleteButtonClick = (index: number) => {
+  const handleCityDeleteButtonClick = (index: number) => {
     cities.splice(index, 1)
-    setCities([...cities])
+    const updatedCities = [...cities]
+    setStoredCities(updatedCities).then(() => {
+      setCities(updatedCities)
+    })
   }
 
   return (
@@ -46,7 +53,7 @@ const App: React.FC<{}> = () => {
         <WeatherCard
           city={city}
           key={index}
-          onDelete={() => handlecityDeleteButtonClick(index)}
+          onDelete={() => handleCityDeleteButtonClick(index)}
         />
       ))}
       <Box height="5px" />
